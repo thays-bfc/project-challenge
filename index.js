@@ -1,5 +1,8 @@
 const express = require('express');
+const cors = require('cors');
+const { uuid } = require("uuidv4");
 const server = express();
+server.use(cors());
 server.use(express.json());
 
 /**
@@ -20,7 +23,7 @@ const projects = [];
  * Counts number of requests 
  *  before after every request
  */
-server.use((req, res, next)=>{
+server.use((req, res, next) => {
     next();
     console.count("Number of requests");
 });
@@ -32,12 +35,12 @@ server.use((req, res, next)=>{
  * @param {*} res 
  * @param {*} next 
  */
-function checkProjectExists( req, res, next) {
+function checkProjectExists(req, res, next) {
     const { id } = req.params;
     const project = projects.find(p => p.id == id)
 
     if (!project) {
-       return res.status(400).json({ error : "Project not found" });
+        return res.status(400).json({ error: "Project not found" });
     }
 
     req.project = project;
@@ -54,11 +57,11 @@ function checkProjectExists( req, res, next) {
  * @param {*} next 
  */
 function checkProjectRequest(req, res, next) {
-    if (!req.body.id) {
-       return res.status(400).json({ error : "Project id is required" });
-    }
+    // if (!req.body.id) {
+    //     return res.status(400).json({ error: "Project id is required" });
+    // }
     if (!req.body.title) {
-        res.status(400).json({ error : "Project title is required" });
+        res.status(400).json({ error: "Project title is required" });
     }
     return next();
 }
@@ -67,11 +70,11 @@ function checkProjectRequest(req, res, next) {
  * Register new project
  *
  */
-server.post('/projects',checkProjectRequest, ( req, res )=>{
-    const { id, title } = req.body;
+server.post('/projects', checkProjectRequest, (req, res) => {
+    const { title } = req.body;
 
     const project = {
-        id: id,
+        id: uuid(),
         title: title,
         tasks: []
     }
@@ -85,14 +88,14 @@ server.post('/projects',checkProjectRequest, ( req, res )=>{
 /**
  * Find and return all projects
  */
-server.get('/projects', ( req, res )=>{
+server.get('/projects', (req, res) => {
     return res.json(projects);
 })
 
 /**
  * Find and return project by id
  */
-server.get('/projects/:id', checkProjectExists, ( req, res )=>{
+server.get('/projects/:id', checkProjectExists, (req, res) => {
     return res.json(req.project);
 })
 
@@ -100,7 +103,7 @@ server.get('/projects/:id', checkProjectExists, ( req, res )=>{
 /**
  * Updates project tittle by id
  */
-server.put('/projects/:id', checkProjectExists, ( req, res )=>{
+server.put('/projects/:id', checkProjectExists, (req, res) => {
     const { title } = req.body;
 
     req.project.title = title;
@@ -113,8 +116,8 @@ server.put('/projects/:id', checkProjectExists, ( req, res )=>{
  * Deletes project by id
  */
 
-server.delete('/projects/:id', checkProjectExists, ( req, res )=>{
-    projects.splice(req.index,1);
+server.delete('/projects/:id', checkProjectExists, (req, res) => {
+    projects.splice(req.index, 1);
 
     return res.send();
 })
@@ -122,7 +125,7 @@ server.delete('/projects/:id', checkProjectExists, ( req, res )=>{
 /**
  * Inserts new task into project by ID
  */
-server.post('/projects/:id/tasks', checkProjectExists, ( req, res )=>{
+server.post('/projects/:id/tasks', checkProjectExists, (req, res) => {
     const { title } = req.body;
 
     req.project.tasks.push(title);
